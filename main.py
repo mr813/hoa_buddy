@@ -313,19 +313,22 @@ def chat_page():
         )
         
         # Controls section
-        col1, col2, col3 = st.columns([2, 1, 1])
+        col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
         
         with col1:
             top_k = st.slider("🔍 Search Results", 3, 10, 5, help="Number of similar documents to search")
         
         with col2:
+            use_reranking = st.checkbox("🔄 Reranking", value=True, help="Enable intelligent reranking of search results for better relevance")
+        
+        with col3:
             if st.button("🤖 Ask HOABOT", type="primary", use_container_width=True):
                 if user_query.strip():
-                    generate_chat_response(user_query, top_k)
+                    generate_chat_response(user_query, top_k, use_reranking)
                 else:
                     st.warning("Please enter a question.")
         
-        with col3:
+        with col4:
             if st.button("🗑️ Clear Chat", use_container_width=True):
                 st.session_state.conversation_history = []
                 st.session_state.chat_engine.clear_conversation_history()
@@ -354,14 +357,14 @@ def chat_page():
     else:
         st.info("💡 Start a conversation by asking a question about your uploaded documents!")
 
-def generate_chat_response(user_query, top_k):
+def generate_chat_response(user_query, top_k, use_reranking=True):
     """Generate a chat response using the RAG system."""
     try:
         # Update current time
         st.session_state.current_time = get_current_time()
         
         # Generate response
-        response_data = st.session_state.chat_engine.generate_response(user_query, top_k)
+        response_data = st.session_state.chat_engine.generate_response(user_query, top_k, use_reranking)
         
         if 'error' in response_data:
             st.error(f"❌ {response_data['error']}")
@@ -577,6 +580,39 @@ def settings_page():
         with col3:
             line_count = len(current_prompt.split('\n'))
             st.metric("Line Count", f"{line_count} lines")
+    
+    # Search Configuration
+    st.markdown("### 🔍 Search & Reranking Configuration")
+    
+    with st.expander("🔄 Reranking Settings", expanded=True):
+        st.markdown("""
+        **Configure how HOABOT searches and ranks document results.**
+        
+        Reranking improves search quality by combining semantic similarity with keyword matching, 
+        content quality assessment, and document importance scoring.
+        """)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            default_reranking = st.checkbox(
+                "Enable Reranking by Default", 
+                value=True, 
+                help="Automatically enable reranking for all searches"
+            )
+            
+            if st.button("💾 Save Reranking Settings", type="primary"):
+                st.session_state["default_reranking"] = default_reranking
+                st.success("✅ Reranking settings saved!")
+        
+        with col2:
+            st.markdown("**Reranking Components:**")
+            st.markdown("""
+            - **Semantic Similarity (50%)**: Vector-based similarity
+            - **Keyword Relevance (30%)**: Exact phrase and word matching
+            - **Content Quality (15%)**: Text length, diversity, processing method
+            - **Document Importance (5%)**: Bylaws preference, page position
+            """)
     
     # Database management
     st.markdown("### 🗄️ Database Management")

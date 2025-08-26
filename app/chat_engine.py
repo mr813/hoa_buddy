@@ -13,15 +13,15 @@ class ChatEngine:
         self.perplexity_config = Config.get_perplexity_config()
         self.conversation_history = []
     
-    def generate_response(self, user_query: str, top_k: int = 5) -> Dict[str, Any]:
+    def generate_response(self, user_query: str, top_k: int = 5, use_reranking: bool = True) -> Dict[str, Any]:
         """Generate a response using RAG with Perplexity API."""
         if not user_query.strip():
             return {"error": "Empty query provided"}
         
         try:
-            # Step 1: Search for relevant documents
+            # Step 1: Search for relevant documents with reranking
             with st.spinner("Searching for relevant documents..."):
-                search_results = self.vector_store.search_similar(user_query, top_k=top_k)
+                search_results = self.vector_store.search_similar(user_query, top_k=top_k, use_reranking=use_reranking)
             
             if not search_results:
                 return {
