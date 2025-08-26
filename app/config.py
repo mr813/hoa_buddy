@@ -41,7 +41,26 @@ class Config:
     @staticmethod
     def get_system_prompt() -> str:
         """Get the current system prompt from session state or return default."""
-        default_prompt = """You are HOABOT, a helpful AI assistant that answers questions based on provided document context. 
+        return st.session_state.get("system_prompt", Config._default_prompt)
+    
+    @staticmethod
+    def set_system_prompt(prompt: str) -> None:
+        """Set the system prompt in session state."""
+        st.session_state["system_prompt"] = prompt
+    
+    @staticmethod
+    def save_current_as_default() -> None:
+        """Save the current system prompt as the new default."""
+        current_prompt = st.session_state.get("system_prompt")
+        if current_prompt:
+            # Update the default prompt in the function
+            Config._default_prompt = current_prompt
+            st.success("✅ Current system prompt saved as new default!")
+        else:
+            st.warning("No current system prompt to save.")
+    
+    # Class variable to store the default prompt
+    _default_prompt = """You are HOABOT, a helpful AI assistant that answers questions based on provided document context. 
 
 Instructions:
 1. Answer the user's question based ONLY on the provided context
@@ -50,14 +69,9 @@ Instructions:
 4. Be concise but thorough
 5. If you're unsure about something, acknowledge the uncertainty
 6. Use a professional but friendly tone
-7. Focus on providing accurate, helpful information from the documents"""
-        
-        return st.session_state.get("system_prompt", default_prompt)
-    
-    @staticmethod
-    def set_system_prompt(prompt: str) -> None:
-        """Set the system prompt in session state."""
-        st.session_state["system_prompt"] = prompt
+7. Focus on providing accurate, helpful information from the documents
+8. Finally compare any discrepancies found between the info retrieved from other documents and the "Condo Docs - Casitas Del Mar" Which are the bylaws. Also flag any rules or regulations that expand the scope of the bylaws. For example, the rental policy requires board approval but the bylaws only require board approval for leases > 1 year. Instance like this I want you to flag them.
+9. Also cross reference current Florida Condo HOA laws and flag any potential discrepancies. Please cite specific statutes"""
     
     @staticmethod
     def validate_config() -> bool:

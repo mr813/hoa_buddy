@@ -556,6 +556,13 @@ def settings_page():
                 st.write("Current system prompt copied to clipboard!")
                 st.code(current_prompt)
         
+        # Add a fourth column for saving as default
+        col4 = st.columns(1)[0]
+        with col4:
+            if st.button("💾 Save as Default", type="primary"):
+                Config.save_current_as_default()
+                st.rerun()
+        
         # Show prompt statistics
         st.markdown("---")
         col1, col2, col3 = st.columns(3)
